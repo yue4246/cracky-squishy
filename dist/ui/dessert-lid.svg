@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 190">
+<defs><filter id="paper"><feTurbulence baseFrequency=".65" numOctaves="3" seed="8" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="linear" slope=".10"/></feComponentTransfer></filter><clipPath id="edge"><rect x="5" y="5" width="290" height="180" rx="42"/></clipPath></defs>
+<rect x="3" y="3" width="294" height="184" rx="44" fill="#eee4d3"/>
+<rect x="8" y="7" width="284" height="173" rx="39" fill="#fff9eb" stroke="#e0d4bf" stroke-width="2"/>
+<rect x="15" y="14" width="270" height="159" rx="33" fill="none" stroke="#f3eadc" stroke-width="4"/>
+<g clip-path="url(#edge)"><rect x="0" y="0" width="300" height="190" filter="url(#paper)" opacity=".8"/>
+<g transform="translate(161 13) rotate(9)"><path d="M0 0H105V21H0Z" fill="#e9c1b4"/><path d="M5 2v16m12-16v16m12-16v16m12-16v16m12-16v16m12-16v16m12-16v16m12-16v16" stroke="#44414a" stroke-width="7"/></g>
+<g transform="translate(34 91) rotate(-8)"><path d="M0 0h39v90H0Z" fill="#f4deb0" opacity=".85"/><path d="M9 0v90m19-90v90" stroke="#d2bd81" stroke-width="5"/><path d="M0 10h39M0 33h39M0 57h39" stroke="#e9a6b6" stroke-width="10"/><path d="M0 19h39M0 44h39M0 70h39" stroke="#fff9ec" stroke-width="2"/></g>
+<circle cx="53" cy="51" r="21" fill="#469bcb"/>
+<path d="M104 32l4 12 12 3-11 5-3 13-4-12-11-4 10-5Z" fill="#e0d26b" stroke="#53483d" stroke-width="1.5"/>
+<g stroke="#615047" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M123 112q-9-22 7-27-5-24 6-23 9 1 11 20 6-24 14-19 8 5-1 24 24 6 12 29-19 18-49-4Z"/><path d="M136 96v3m19-3v3m-15 8q5 5 10-1M184 93q8-12 15 0m3-5q8-11 14 2M189 104q8 6 16-1M93 135q42-8 84 1m-75 7q35-7 69 1"/></g>
+<g fill="#e29bac"><ellipse cx="130" cy="106" rx="5" ry="3"/><ellipse cx="159" cy="107" rx="5" ry="3"/><path d="M253 53l4 10 12 2-10 7 1 12-9-8-11 4 5-12-6-9 12 1Z"/></g>
+<path d="M191 146q8-15 16-5t20-1" fill="none" stroke="#6c9971" stroke-width="8" stroke-linecap="round"/>
+<g fill="#b87289"><circle cx="250" cy="122" r="3"/><circle cx="262" cy="127" r="3"/><circle cx="268" cy="139" r="3"/><circle cx="263" cy="151" r="3"/><circle cx="251" cy="156" r="3"/><circle cx="239" cy="151" r="3"/><circle cx="234" cy="139" r="3"/><circle cx="239" cy="127" r="3"/></g>
+<text x="92" y="162" fill="#907763" font-family="Georgia,serif" font-size="10" letter-spacing="2" transform="rotate(-4 92 162)">a little sweet</text>
+</g></svg>

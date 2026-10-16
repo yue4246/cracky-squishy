@@ -1,0 +1,65 @@
+import assert from 'node:assert/strict';
+import {test,after} from 'node:test';
+import {build} from 'esbuild';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {pathToFileURL} from 'node:url';
+import {rm} from 'node:fs/promises';
+const output=join(tmpdir(),`keyboard-${process.pid}.mjs`);
+await build({stdin:{contents:"export * from './src/rendering/KeyboardToy';export * from './src/core/SquishySnapshot';export * from './src/core/SquishyStateMachine';",resolveDir:process.cwd(),loader:'ts'},outfile:output,bundle:true,platform:'node',format:'esm'});
+after(()=>rm(output,{force:true}));
+const {KeyboardToy,KEY_LAYOUT,validSnapshot,SquishyStateMachine}=await import(pathToFileURL(output));
+const point=i=>({x:(KEY_LAYOUT[i].x+KEY_LAYOUT[i].w/2)/1000,y:(KEY_LAYOUT[i].y+20)/480});
+const event=i=>({...point(i),type:'press',force:.5,intensity:.5});
+test('keyboard presses change only the selected key, holding does not repeat, release retains the dent',()=>{
+ const board=new KeyboardToy();board.event(event(4));const one=structuredClone(board.states);
+ for(let i=0;i<120;i++)board.press(.5);
+ assert.deepEqual(board.states,one);
+ assert.ok(one[4].damage>0 && one[4].depth>0);
+ assert.ok(one.every((s,i)=>i===4||s.damage===0&&s.depth===0));
+ board.event({type:'release'});assert.deepEqual(board.states,one);
+ board.event(event(4));assert.equal(board.states[4].damage,1);assert.ok(board.states[4].depth>one[4].depth);
+ board.event(event(6));assert.ok(board.states[6].damage>0);assert.equal(board.states[5].damage,0);
+});
+test('keyboard geometry has fixed handmade variation instead of a perfect grid',()=>{
+ const ordinary=KEY_LAYOUT.filter(k=>k.label.length===1&&k.label!=='↵');
+  assert.ok(new Set(KEY_LAYOUT.map(k=>k.y)).size>10,'key baselines should gently wander');
+  assert.ok(new Set(ordinary.map(k=>k.w)).size>4,'key widths should vary by hand');
+ assert.ok(Math.max(...ordinary.map(k=>k.w))-Math.min(...ordinary.map(k=>k.w))>=9,'width variation should be visible');
+ assert.ok(KEY_LAYOUT.some(k=>Math.abs(k.angle)>.03),'some keys should visibly rotate');
+ assert.ok(KEY_LAYOUT.every(k=>k.x>15&&k.x+k.w<985&&k.y>20&&k.y+k.h<455));
+});
+test('keyboard pans on the base without damaging keys; hit testing follows the moved keyboard',()=>{
+ const board=new KeyboardToy();board.layout(390,800);
+ const p=board.screen(point(4));assert.equal(board.keyAt(board.point(p.x,p.y)),4);
+ assert.equal(board.pan({type:'down',...p}),false);
+ assert.equal(board.pan({type:'down',x:0,y:0}),true);
+ board.stop();board.pan({type:'move',x:100,y:15});board.pan({type:'up',x:100,y:15});
+ const moved=board.screen(point(4));assert.equal(moved.x-p.x,100);
+ assert.equal(board.keyAt(board.point(moved.x,moved.y)),4);
+ assert.ok(board.states.every(s=>s.damage===0));
+ board.pan({type:'down',x:0,y:0});board.pan({type:'cancel',x:0,y:0});assert.equal(board.pan({type:'move',x:10,y:10}),false);
+});
+test('per-key saved state validates and rejects malformed values',()=>{
+ const m=new SquishyStateMachine(),board=new KeyboardToy();board.event(event(1));
+ const saved={version:1,pressCount:1,damage:[...m.damage],opened:[...m.opened],residualX:[...m.residualX],residualY:[...m.residualY],residualH:[...m.residualH],wax:[],keys:board.states};
+ assert.equal(validSnapshot(saved),true);assert.equal(validSnapshot({...saved,keys:[]}),false);
+ assert.equal(validSnapshot({...saved,keys:board.states.map(s=>({...s,damage:NaN}))}),false);
+ const legacy={...saved,keys:board.states.map(s=>({...s,wax:Array.from({length:64},(_,i)=>({damage:i<12?1:0,state:i<6?2:i<12?1:0}))}))};
+ assert.equal(validSnapshot(legacy),true,'old keyboard saves remain readable');
+ board.restore(legacy.keys);assert.ok(board.states.every(s=>s.wax?.length===17),'old dense cracks migrate to the handmade plates');
+ board.reset();assert.ok(board.states.every(s=>s.depth===0&&s.damage===0));
+});
+test('one press breaks exactly one key and never creates falling debris',()=>{
+ const board=new KeyboardToy();board.event(event(4));
+ const first=structuredClone(board.states[4].wax);
+ assert.ok(first.length>=14&&first.length<=20,'keycaps should split into a few large irregular wax plates, not a dense grid');
+ assert.ok(first.every(p=>p.state===2&&p.damage===1),'the selected key breaks completely on its first press');
+ assert.equal(board.exposed(point(4)),true,'the broken key exposes its filling immediately');
+ assert.equal(board.states[5].wax,undefined,'neighbor keys remain intact');
+ board.update(1);
+ assert.deepEqual(board.states[4].wax,first,'broken shell stays in place without a delayed debris phase');
+ board.stop();board.event(event(5));
+ assert.ok(board.states[5].wax.every(p=>p.state===2),'the next press breaks only the next key');
+ const held=structuredClone(board.states);for(let n=0;n<100;n++)board.press(.5);assert.deepEqual(board.states,held);
+});
