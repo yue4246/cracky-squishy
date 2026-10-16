@@ -1,4 +1,5 @@
 import './style.css';
+import { trackEvent } from './analytics';
 import { AudioEngine } from './core/AudioEngine';
 import { SquishyStateMachine, clamp, type Point } from './core/SquishyStateMachine';
 import { PointerController, type PointerInput } from './input/PointerController';
@@ -191,6 +192,8 @@ window.addEventListener('pagehide', () => { releaseAll(); saveCurrent(); store.f
 if (import.meta.env.DEV) Object.assign(window, { squishyDebug: { model, renderer: scene.squishy, audio, characters } });
 const store = new SquishyStore();
 store.recordVisit();
+trackEvent('page_view');
+trackEvent('app_open');
 if (import.meta.env.DEV) Object.assign(window, { DEV_ANALYTICS: {
   summary: () => {
     const data = store.getAnalytics();
